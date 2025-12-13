@@ -23,6 +23,15 @@ exports.getCustomerByPhone = asyncHandler(async (req, res) => {
 exports.createOrUpdateCustomer = asyncHandler(async (req, res) => {
   const { phone, name, email, address } = req.body;
   
+  // Validate required fields
+  if (!phone) {
+    return sendError(res, 400, 'Phone number is required');
+  }
+  
+  if (!name) {
+    return sendError(res, 400, 'Customer name is required');
+  }
+  
   let customer = await Customer.findOne({ phone });
   
   if (customer) {

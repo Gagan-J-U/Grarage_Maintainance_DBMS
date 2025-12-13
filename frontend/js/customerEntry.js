@@ -160,7 +160,7 @@ if (form) {
       
       // Redirect to service page
       setTimeout(() => {
-        window.location.href = `service-details.html?id=${serviceResponse.data._id}`;
+        window.location.href = `/pages/service-details.html?id=${serviceResponse.data._id}`;
       }, 1500);
       
     } catch (error) {

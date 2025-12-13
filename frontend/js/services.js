@@ -58,7 +58,7 @@ function displayServices(services) {
         <td>${formatCurrency(service.totalAmount)}</td>
         <td>${formatDate(service.serviceDate || service.createdAt)}</td>
         <td>
-          <a href="service-details.html?id=${service._id}" class="btn btn-sm btn-primary">View</a>
+          <a href="/pages/service-details.html?id=${service._id}" class="btn btn-sm btn-primary">View</a>
         </td>
       </tr>
     `;
