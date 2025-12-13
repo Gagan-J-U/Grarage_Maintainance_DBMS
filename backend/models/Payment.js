@@ -37,7 +37,7 @@ const paymentSchema = new mongoose.Schema({
   paymentMode: {
     type: String,
     enum: ['Cash', 'UPI', 'Card', 'Net Banking'],
-    required: true
+    required: false // Optional when creating payment entry, required when processing payment
   },
   paymentStatus: {
     type: String,

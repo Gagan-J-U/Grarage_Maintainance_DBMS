@@ -4,56 +4,185 @@ let currentCustomer = null;
 let currentVehicle = null;
 
 // Phone number input handler with debounce
-const phoneInput = document.getElementById('phoneNumber');
-if (phoneInput) {
-  phoneInput.addEventListener('input', debounce(async (e) => {
-    const phone = e.target.value.trim();
-    
-    if (phone.length === 10) {
-      await checkCustomer(phone);
-    } else {
-      resetCustomerFields();
-    }
-  }, 500));
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const phoneInput = document.getElementById('phoneNumber');
+  if (phoneInput) {
+    phoneInput.addEventListener('input', debounce(async (e) => {
+      const phone = e.target.value.trim();
+      
+      if (phone.length === 10) {
+        await checkCustomer(phone);
+      } else if (phone.length < 10) {
+        resetCustomerFields();
+        hideExistingVehicles();
+      }
+    }, 500));
+  }
+  
+  // Vehicle number input handler
+  const vehicleNumberInput = document.getElementById('vehicleNumber');
+  if (vehicleNumberInput) {
+    vehicleNumberInput.addEventListener('input', debounce(async (e) => {
+      const vehicleNumber = e.target.value.trim().toUpperCase();
+      
+      if (vehicleNumber.length >= 6 && currentCustomer) {
+        await checkVehicle(vehicleNumber);
+      }
+    }, 500));
+  }
+});
 
-// Vehicle number input handler
-const vehicleNumberInput = document.getElementById('vehicleNumber');
-if (vehicleNumberInput) {
-  vehicleNumberInput.addEventListener('input', debounce(async (e) => {
-    const vehicleNumber = e.target.value.trim().toUpperCase();
-    
-    if (vehicleNumber.length >= 6 && currentCustomer) {
-      await checkVehicle(vehicleNumber);
-    }
-  }, 500));
-}
+// Vehicle number input handler is now in DOMContentLoaded
 
 // Check if customer exists
 async function checkCustomer(phone) {
   try {
+    if (!phone || phone.length !== 10) {
+      return;
+    }
+    
     const response = await customerAPI.getByPhone(phone);
     
-    if (response.success) {
+    if (response && response.success && response.data) {
       currentCustomer = response.data.customer;
+      const vehicles = response.data.vehicles || [];
       
       // Auto-fill customer details
-      document.getElementById('customerName').value = currentCustomer.name;
-      document.getElementById('customerEmail').value = currentCustomer.email || '';
-      document.getElementById('customerAddress').value = currentCustomer.address || '';
+      const nameInput = document.getElementById('customerName');
+      const emailInput = document.getElementById('customerEmail');
+      const addressInput = document.getElementById('customerAddress');
       
-      // Make fields readonly (but editable if needed)
-      document.getElementById('customerName').style.background = '#f0fdf4';
-      document.getElementById('customerEmail').style.background = '#f0fdf4';
-      document.getElementById('customerAddress').style.background = '#f0fdf4';
+      if (nameInput) {
+        nameInput.value = currentCustomer.name || '';
+        nameInput.style.background = '#f0fdf4';
+      }
+      if (emailInput) {
+        emailInput.value = currentCustomer.email || '';
+        emailInput.style.background = '#f0fdf4';
+      }
+      if (addressInput) {
+        addressInput.value = currentCustomer.address || '';
+        addressInput.style.background = '#f0fdf4';
+      }
       
-      showAlert('Customer found! Details auto-filled.', 'success');
+      // Display existing vehicles if any
+      if (vehicles && vehicles.length > 0) {
+        displayExistingVehicles(vehicles);
+        showAlert('Customer found! Select a vehicle or add new one.', 'success');
+      } else {
+        hideExistingVehicles();
+        showAlert('Customer found! Please add vehicle details.', 'success');
+      }
+    } else {
+      // Customer not found - allow new entry
+      currentCustomer = null;
+      resetCustomerFields();
+      hideExistingVehicles();
     }
   } catch (error) {
     // Customer not found - allow new entry
+    console.log('Customer not found, allowing new entry');
     currentCustomer = null;
     resetCustomerFields();
+    hideExistingVehicles();
   }
+}
+
+// Display existing vehicles
+function displayExistingVehicles(vehicles) {
+  const container = document.getElementById('existingVehiclesContainer');
+  const list = document.getElementById('existingVehiclesList');
+  const newVehicleForm = document.getElementById('newVehicleForm');
+  
+  if (!container || !list) {
+    console.error('Vehicle container elements not found');
+    return;
+  }
+  
+  container.style.display = 'block';
+  if (newVehicleForm) {
+    newVehicleForm.style.display = 'none';
+  }
+  
+  // Clear previous selection
+  const selectedVehicleIdInput = document.getElementById('selectedVehicleId');
+  if (selectedVehicleIdInput) {
+    selectedVehicleIdInput.value = '';
+  }
+  currentVehicle = null;
+  
+  list.innerHTML = vehicles.map(vehicle => {
+    const vehicleId = vehicle._id ? (typeof vehicle._id === 'object' ? vehicle._id.toString() : vehicle._id) : '';
+    const vehicleNumber = vehicle.vehicleNumber || '';
+    const vehicleType = vehicle.vehicleType || '';
+    const brand = vehicle.brand || '';
+    const model = vehicle.model || '';
+    
+    return `
+    <div class="vehicle-item" 
+         data-vehicle-id="${vehicleId}"
+         style="padding: 12px; border: 2px solid var(--border-color); border-radius: 6px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s;"
+         onclick="selectExistingVehicle('${vehicleId}', '${vehicleNumber}', '${vehicleType}')"
+         onmouseover="if(!this.classList.contains('selected')) { this.style.borderColor='var(--primary-color)'; this.style.background='#f0f7ff'; }"
+         onmouseout="if(!this.classList.contains('selected')) { this.style.borderColor='var(--border-color)'; this.style.background=''; }">
+      <div style="font-weight: 600;">${vehicleNumber}</div>
+      <div style="font-size: 13px; color: var(--text-secondary);">
+        ${vehicleType} ${brand ? '• ' + brand : ''} ${model ? '• ' + model : ''}
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+// Hide existing vehicles
+function hideExistingVehicles() {
+  document.getElementById('existingVehiclesContainer').style.display = 'none';
+  document.getElementById('newVehicleForm').style.display = 'block';
+}
+
+// Show new vehicle form
+function showNewVehicleForm() {
+  document.getElementById('existingVehiclesContainer').style.display = 'none';
+  document.getElementById('newVehicleForm').style.display = 'block';
+  document.getElementById('selectedVehicleId').value = '';
+  currentVehicle = null;
+}
+
+// Select existing vehicle
+function selectExistingVehicle(vehicleId, vehicleNumber, vehicleType) {
+  const selectedVehicleIdInput = document.getElementById('selectedVehicleId');
+  if (selectedVehicleIdInput) {
+    selectedVehicleIdInput.value = vehicleId;
+  }
+  
+  currentVehicle = { _id: vehicleId, vehicleNumber, vehicleType };
+  
+  // Highlight selected vehicle
+  const list = document.getElementById('existingVehiclesList');
+  if (list) {
+    const items = list.querySelectorAll('.vehicle-item');
+    items.forEach(item => {
+      item.classList.remove('selected');
+      item.style.borderColor = 'var(--border-color)';
+      item.style.background = '';
+    });
+    
+    // Find and highlight the selected item
+    const selectedItem = list.querySelector(`[data-vehicle-id="${vehicleId}"]`);
+    if (selectedItem) {
+      selectedItem.classList.add('selected');
+      selectedItem.style.borderColor = 'var(--primary-color)';
+      selectedItem.style.background = '#e0f2fe';
+    }
+  }
+  
+  // Hide new vehicle form
+  const newVehicleForm = document.getElementById('newVehicleForm');
+  if (newVehicleForm) {
+    newVehicleForm.style.display = 'none';
+  }
+  
+  showAlert(`Vehicle ${vehicleNumber} selected`, 'success');
 }
 
 // Check if vehicle exists
@@ -94,6 +223,9 @@ function resetCustomerFields() {
   document.getElementById('customerName').style.background = '';
   document.getElementById('customerEmail').style.background = '';
   document.getElementById('customerAddress').style.background = '';
+  
+  hideExistingVehicles();
+  document.getElementById('selectedVehicleId').value = '';
 }
 
 // Form submission
@@ -135,18 +267,32 @@ if (form) {
       
       const customerId = customerResponse.data._id;
       
-      // Create or update vehicle
-      const vehicleResponse = await vehicleAPI.createOrUpdate({
-        vehicleNumber,
-        customerId,
-        vehicleType,
-        brand: vehicleBrand,
-        model: vehicleModel,
-        year: vehicleYear ? parseInt(vehicleYear) : null,
-        color: vehicleColor
-      });
+      // Check if existing vehicle is selected
+      const selectedVehicleId = document.getElementById('selectedVehicleId').value;
+      let vehicleId;
       
-      const vehicleId = vehicleResponse.data._id;
+      if (selectedVehicleId) {
+        // Use existing vehicle
+        vehicleId = selectedVehicleId;
+      } else {
+        // Validate vehicle fields for new vehicle
+        if (!vehicleNumber || !vehicleType) {
+          throw new Error('Vehicle number and type are required');
+        }
+        
+        // Create or update vehicle
+        const vehicleResponse = await vehicleAPI.createOrUpdate({
+          vehicleNumber,
+          customerId,
+          vehicleType,
+          brand: vehicleBrand,
+          model: vehicleModel,
+          year: vehicleYear ? parseInt(vehicleYear) : null,
+          color: vehicleColor
+        });
+        
+        vehicleId = vehicleResponse.data._id;
+      }
       
       // Create service entry
       const serviceResponse = await serviceAPI.create({
