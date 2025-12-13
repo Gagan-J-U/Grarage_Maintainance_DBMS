@@ -1,6 +1,7 @@
 // frontend/js/api.js
-// API Base URL
-const API_BASE_URL = 'http://localhost:5000/api';
+// API Base URL - Use relative path since frontend is served by the same Express server
+// This automatically uses whatever port the server is running on
+const API_BASE_URL = '/api';
 
 // Generic API call function
 async function apiCall(endpoint, options = {}) {
@@ -13,15 +14,29 @@ async function apiCall(endpoint, options = {}) {
       },
     });
 
-    const data = await response.json();
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    let data;
+    
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      throw new Error(text || `HTTP ${response.status}: ${response.statusText}`);
+    }
 
     if (!response.ok) {
-      throw new Error(data.error || 'Something went wrong');
+      throw new Error(data.error || data.message || `HTTP ${response.status}: ${response.statusText}`);
     }
 
     return data;
   } catch (error) {
-    console.error('API Error:', error);
+    // Enhanced error logging
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      console.error('API Error: Network error - Is the server running?', error);
+      throw new Error('Cannot connect to server. Please check if the server is running.');
+    }
+    console.error('API Error:', error.message || error);
     throw error;
   }
 }
@@ -436,7 +451,7 @@ if (form) {
       
       // Create or update customer
       const customerResponse = await customerAPI.createOrUpdate({
-        phoneNumber,
+        phone: phoneNumber,
         name: customerName,
         email: customerEmail,
         address: customerAddress
@@ -469,7 +484,7 @@ if (form) {
       
       // Redirect to service page
       setTimeout(() => {
-        window.location.href = `service-details.html?id=${serviceResponse.data._id}`;
+        window.location.href = `/pages/service-details.html?id=${serviceResponse.data._id}`;
       }, 1500);
       
     } catch (error) {
