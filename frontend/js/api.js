@@ -28,7 +28,7 @@ async function apiCall(endpoint, options = {}) {
 
 // Customer API
 const customerAPI = {
-  getByPhone: (phoneNumber) => apiCall(`/customers/phone/${phoneNumber}`),
+  getByPhone: (phone) => apiCall(`/customers/phone/${phone}`),
   createOrUpdate: (data) => apiCall('/customers', {
     method: 'POST',
     body: JSON.stringify(data)
@@ -161,9 +161,9 @@ const dashboardAPI = {
 const historyAPI = {
   getAll: (filters = {}) => {
     const params = new URLSearchParams(filters);
-    return apiCall(`/api/service-history?${params}`);
+    return apiCall(`/history?${params}`);
   },
-  getById: (id) => apiCall(`/api/service-history/${id}`)
+  getById: (id) => apiCall(`/history/${id}`)
 };
 
 // ============================================
@@ -311,24 +311,19 @@ document.addEventListener('DOMContentLoaded', () => {
   setActiveNavLink();
 });
 
-// ============================================
-// frontend/js/customerEntry.js
-
-let currentCustomer = null;
-let currentVehicle = null;
-
-// Phone number input handler with debounce
-const phoneInput = document.getElementById('phoneNumber');
-if (phoneInput) {
-  phoneInput.addEventListener('input', debounce(async (e) => {
-    const phoneNumber = e.target.value.trim();
-    
-    if (phoneNumber.length === 10) {
-      await checkCustomer(phoneNumber);
-    } else {
-      resetCustomerFields();
-    }
-  }, 500));
+// Export APIs for use in other files
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    customerAPI,
+    vehicleAPI,
+    serviceAPI,
+    employeeAPI,
+    partsAPI,
+    paymentAPI,
+    feedbackAPI,
+    dashboardAPI,
+    historyAPI
+  };
 }
 
 // Vehicle number input handler

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service History - Garage Management</title>
+  <link rel="stylesheet" href="../css/global.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="nav-brand">🏗️ Garage Management</a>
+      <ul class="nav-menu">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="services.html" class="nav-link">Services</a></li>
+        <li><a href="inventory.html" class="nav-link">Inventory</a></li>
+        <li><a href="employees.html" class="nav-link">Employees</a></li>
+        <li><a href="payments.html" class="nav-link">Payments</a></li>
+        <li><a href="history.html" class="nav-link active">History</a></li>
+        <li><a href="feedback.html" class="nav-link">Feedback</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="container">
+      <h1 class="page-title">Service History</h1>
+      <p class="page-subtitle">View completed service records</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Alert Message -->
+    <div id="alertMessage" class="alert hidden"></div>
+
+    <!-- Filters -->
+    <div class="card">
+      <div class="card-header">Filters</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="dateFrom" class="form-label">From Date</label>
+          <input type="date" id="dateFrom" class="form-input" onchange="loadHistory()">
+        </div>
+        <div class="form-group">
+          <label for="dateTo" class="form-label">To Date</label>
+          <input type="date" id="dateTo" class="form-input" onchange="loadHistory()">
+        </div>
+        <div class="form-group">
+          <label for="phoneFilter" class="form-label">Phone Number</label>
+          <input type="text" id="phoneFilter" class="form-input" placeholder="Search by phone..." oninput="debounce(loadHistory, 300)()">
+        </div>
+        <div class="form-group">
+          <label for="vehicleFilter" class="form-label">Vehicle Number</label>
+          <input type="text" id="vehicleFilter" class="form-input" placeholder="Search by vehicle..." oninput="debounce(loadHistory, 300)()">
+        </div>
+      </div>
+    </div>
+
+    <!-- History Table -->
+    <div class="card">
+      <div class="card-header">Completed Services</div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Completion Date</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Vehicle</th>
+              <th>Service Types</th>
+              <th>Total Amount</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <tr>
+              <td colspan="7" class="text-center text-muted">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Details Modal -->
+  <div id="historyDetailsModal" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Service History Details</h3>
+        <button class="modal-close" onclick="closeModal('historyDetailsModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="historyDetailsContent">
+        <!-- Details will be inserted here -->
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeModal('historyDetailsModal')" class="btn btn-outline">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/history.js"></script>
+</body>
+</html>
+

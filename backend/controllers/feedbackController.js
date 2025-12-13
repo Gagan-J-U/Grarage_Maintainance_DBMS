@@ -17,7 +17,7 @@ exports.createFeedback = asyncHandler(async (req, res) => {
     serviceId,
     customerId,
     rating,
-    comments
+    comment: comments
   });
   
   await feedback.populate(['serviceId', 'customerId']);

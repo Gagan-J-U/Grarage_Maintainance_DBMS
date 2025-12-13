@@ -5,9 +5,9 @@ const { sendSuccess, sendError } = require('../utils/responseHandler');
 
 // Get customer by phone number
 exports.getCustomerByPhone = asyncHandler(async (req, res) => {
-  const { phoneNumber } = req.params;
+  const { phone } = req.params;
   
-  const customer = await Customer.findOne({ phoneNumber });
+  const customer = await Customer.findOne({ phone });
   
   if (!customer) {
     return sendError(res, 404, 'Customer not found');
@@ -21,9 +21,9 @@ exports.getCustomerByPhone = asyncHandler(async (req, res) => {
 
 // Create or update customer
 exports.createOrUpdateCustomer = asyncHandler(async (req, res) => {
-  const { phoneNumber, name, email, address } = req.body;
+  const { phone, name, email, address } = req.body;
   
-  let customer = await Customer.findOne({ phoneNumber });
+  let customer = await Customer.findOne({ phone });
   
   if (customer) {
     // Update existing customer
@@ -36,7 +36,7 @@ exports.createOrUpdateCustomer = asyncHandler(async (req, res) => {
   }
   
   // Create new customer
-  customer = await Customer.create({ phoneNumber, name, email, address });
+  customer = await Customer.create({ phone, name, email, address });
   sendSuccess(res, 201, customer, 'Customer created successfully');
 });
 
@@ -53,7 +53,7 @@ exports.searchCustomers = asyncHandler(async (req, res) => {
   const customers = await Customer.find({
     $or: [
       { name: { $regex: query, $options: 'i' } },
-      { phoneNumber: { $regex: query, $options: 'i' } }
+      { phone: { $regex: query, $options: 'i' } }
     ]
   }).limit(10);
   

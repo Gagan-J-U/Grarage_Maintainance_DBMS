@@ -13,7 +13,7 @@ const serviceSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-  serviceTypes: [{
+  servicesRequested: [{
     type: String,
     enum: ['Oil Change', 'Engine Repair', 'Brake Service', 'Tire Change', 
            'Battery Replacement', 'AC Service', 'Washing', 'Painting', 
@@ -59,6 +59,11 @@ const serviceSchema = new mongoose.Schema({
     type: String,
     enum: ['Pending', 'In Progress', 'Completed', 'Cancelled'],
     default: 'Pending',
+    index: true
+  },
+  serviceDate: {
+    type: Date,
+    default: Date.now,
     index: true
   },
   startDate: {

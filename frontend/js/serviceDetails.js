@@ -36,10 +36,12 @@ async function loadServiceDetails() {
     updateSummary();
     
     // Pre-select service types
-    currentService.serviceTypes.forEach(type => {
-      const checkbox = document.querySelector(`.service-checkbox[value="${type}"]`);
-      if (checkbox) checkbox.checked = true;
-    });
+    if (currentService.servicesRequested) {
+      currentService.servicesRequested.forEach(type => {
+        const checkbox = document.querySelector(`.service-checkbox[value="${type}"]`);
+        if (checkbox) checkbox.checked = true;
+      });
+    }
     
     // Set description and labor charges
     document.getElementById('serviceDescription').value = currentService.description || '';
@@ -64,7 +66,7 @@ function displayServiceDetails(service) {
   // Customer info
   const customer = service.customerId;
   document.getElementById('customerInfo').textContent = customer.name;
-  document.getElementById('phoneInfo').textContent = formatPhoneNumber(customer.phoneNumber);
+  document.getElementById('phoneInfo').textContent = formatPhoneNumber(customer.phone);
   
   // Vehicle info
   const vehicle = service.vehicleId;
@@ -140,7 +142,7 @@ async function updateServiceTypes() {
     const laborCharges = parseFloat(document.getElementById('laborCharges').value) || 0;
     
     const response = await serviceAPI.update(serviceId, {
-      serviceTypes: selectedTypes,
+      servicesRequested: selectedTypes,
       description,
       laborCharges
     });
@@ -175,10 +177,10 @@ async function searchParts(e) {
     
     resultsDiv.innerHTML = parts.map(part => `
       <div style="padding: 10px; border: 1px solid var(--border-color); margin-bottom: 5px; cursor: pointer; border-radius: 4px;"
-           onclick="selectPart('${part._id}', '${part.partName}', ${part.pricePerUnit}, ${part.quantityAvailable})">
+           onclick="selectPart('${part._id}', '${part.partName}', ${part.price}, ${part.quantityAvailable})">
         <div style="font-weight: 600;">${part.partName}</div>
         <div style="font-size: 12px; color: var(--text-secondary);">
-          ${part.partNumber} | Stock: ${part.quantityAvailable} | ${formatCurrency(part.pricePerUnit)}
+          ${part.partNumber} | Stock: ${part.quantityAvailable} | ${formatCurrency(part.price)}
         </div>
       </div>
     `).join('');
@@ -243,8 +245,8 @@ async function removePart(partIndex) {
   
   try {
     const response = await serviceAPI.removePart({
-      serviceId,
-      partIndex
+      serviceId: serviceId,
+      partIndex: partIndex
     });
     
     currentService = response.data;
@@ -288,7 +290,7 @@ async function updateStatus(newStatus) {
   
   try {
     const response = await serviceAPI.updateStatus({
-      serviceId,
+      serviceId: serviceId,
       status: newStatus
     });
     

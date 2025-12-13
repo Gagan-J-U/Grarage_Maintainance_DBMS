@@ -1,4 +1,4 @@
-// backend/utils/responseHandler.js
+// backend/utils/responceHandler.js (keeping filename for compatibility)
 const sendSuccess = (res, statusCode = 200, data = null, message = 'Success', meta = null) => {
   const payload = { success: true, message, data };
   if (meta) payload.meta = meta;

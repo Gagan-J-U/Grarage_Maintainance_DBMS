@@ -68,11 +68,10 @@ exports.processPayment = asyncHandler(async (req, res) => {
     return sendError(res, 404, 'Payment not found');
   }
   
-  // Calculate tax if provided
+  // Update total amount if needed
   if (taxPercentage) {
-    payment.taxPercentage = taxPercentage;
-    payment.taxAmount = (payment.subtotal * taxPercentage) / 100;
-    payment.totalAmount = payment.subtotal + payment.taxAmount;
+    const subtotal = payment.partsCost + payment.laborCost + payment.extraCharges;
+    payment.totalAmount = subtotal + (subtotal * taxPercentage / 100);
   }
   
   payment.paymentMode = paymentMode;

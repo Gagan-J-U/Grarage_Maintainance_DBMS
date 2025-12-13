@@ -18,31 +18,15 @@ const paymentSchema = new mongoose.Schema({
     ref: 'Vehicle',
     required: true
   },
-  serviceCharges: {
+  partsCost: {
     type: Number,
     default: 0
   },
-  partsCharges: {
-    type: Number,
-    default: 0
-  },
-  laborCharges: {
+  laborCost: {
     type: Number,
     default: 0
   },
   extraCharges: {
-    type: Number,
-    default: 0
-  },
-  subtotal: {
-    type: Number,
-    required: true
-  },
-  taxPercentage: {
-    type: Number,
-    default: 0
-  },
-  taxAmount: {
     type: Number,
     default: 0
   },
@@ -74,7 +58,8 @@ const paymentSchema = new mongoose.Schema({
     default: 0
   },
   paymentDate: {
-    type: Date
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: true

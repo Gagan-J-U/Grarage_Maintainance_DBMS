@@ -1,10 +1,18 @@
 // backend/routes/customerRoutes.js
 const express = require('express');
-const { asyncHandler } = require('../utils/errorHandler');
 const router = express.Router();
+const customerController = require('../controllers/customerController');
 
-router.get('/', asyncHandler(async (req, res) => {
-  res.json({ success: true, message: 'customer list (stub)' });
-}));
+// Get customer by phone
+router.get('/phone/:phone', customerController.getCustomerByPhone);
+
+// Create or update customer
+router.post('/', customerController.createOrUpdateCustomer);
+
+// Get all customers
+router.get('/', customerController.getAllCustomers);
+
+// Search customers
+router.get('/search', customerController.searchCustomers);
 
 module.exports = router;
