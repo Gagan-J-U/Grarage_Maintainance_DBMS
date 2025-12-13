@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employees - Garage Management</title>
+  <link rel="stylesheet" href="../css/global.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="nav-brand">🏗️ Garage Management</a>
+      <ul class="nav-menu">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="services.html" class="nav-link">Services</a></li>
+        <li><a href="inventory.html" class="nav-link">Inventory</a></li>
+        <li><a href="employees.html" class="nav-link active">Employees</a></li>
+        <li><a href="payments.html" class="nav-link">Payments</a></li>
+        <li><a href="history.html" class="nav-link">History</a></li>
+        <li><a href="feedback.html" class="nav-link">Feedback</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="container">
+      <div class="flex-between">
+        <div>
+          <h1 class="page-title">Employees</h1>
+          <p class="page-subtitle">Manage employee information</p>
+        </div>
+        <button onclick="openAddEmployeeModal()" class="btn btn-primary">+ Add Employee</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Alert Message -->
+    <div id="alertMessage" class="alert hidden"></div>
+
+    <!-- Filters -->
+    <div class="card">
+      <div class="card-header">Filters</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="statusFilter" class="form-label">Status</label>
+          <select id="statusFilter" class="form-select" onchange="loadEmployees()">
+            <option value="">All</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Employees Table -->
+    <div class="card">
+      <div class="card-header">Employees List</div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Role</th>
+              <th>Salary</th>
+              <th>Status</th>
+              <th>Joining Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="employeesTableBody">
+            <tr>
+              <td colspan="7" class="text-center text-muted">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Employee Modal -->
+  <div id="employeeModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="employeeModalTitle">Add New Employee</h3>
+        <button class="modal-close" onclick="closeModal('employeeModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="employeeForm">
+          <input type="hidden" id="employeeId">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="employeeName" class="form-label required">Name</label>
+              <input type="text" id="employeeName" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label for="employeePhone" class="form-label required">Phone</label>
+              <input type="text" id="employeePhone" class="form-input" maxlength="10" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="employeeRole" class="form-label required">Role</label>
+              <select id="employeeRole" class="form-select" required>
+                <option value="">Select role</option>
+                <option value="Mechanic">Mechanic</option>
+                <option value="Electrician">Electrician</option>
+                <option value="Helper">Helper</option>
+                <option value="Manager">Manager</option>
+                <option value="Cashier">Cashier</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="employeeSalary" class="form-label required">Salary (₹)</label>
+              <input type="number" id="employeeSalary" class="form-input" min="0" step="0.01" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="employeeStatus" class="form-label">Status</label>
+              <select id="employeeStatus" class="form-select">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="employeeJoiningDate" class="form-label">Joining Date</label>
+              <input type="date" id="employeeJoiningDate" class="form-input">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="employeeAddress" class="form-label">Address</label>
+            <input type="text" id="employeeAddress" class="form-input">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeModal('employeeModal')" class="btn btn-outline">Cancel</button>
+        <button onclick="saveEmployee()" class="btn btn-primary">Save Employee</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/employees.js"></script>
+</body>
+</html>
+

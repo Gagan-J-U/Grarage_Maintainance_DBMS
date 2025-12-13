@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory - Garage Management</title>
+  <link rel="stylesheet" href="../css/global.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="nav-brand">🏗️ Garage Management</a>
+      <ul class="nav-menu">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="services.html" class="nav-link">Services</a></li>
+        <li><a href="inventory.html" class="nav-link active">Inventory</a></li>
+        <li><a href="employees.html" class="nav-link">Employees</a></li>
+        <li><a href="payments.html" class="nav-link">Payments</a></li>
+        <li><a href="history.html" class="nav-link">History</a></li>
+        <li><a href="feedback.html" class="nav-link">Feedback</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="container">
+      <div class="flex-between">
+        <div>
+          <h1 class="page-title">Parts Inventory</h1>
+          <p class="page-subtitle">Manage parts inventory and stock levels</p>
+        </div>
+        <button onclick="openModal('addPartModal')" class="btn btn-primary">+ Add Part</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Alert Message -->
+    <div id="alertMessage" class="alert hidden"></div>
+
+    <!-- Filters -->
+    <div class="card">
+      <div class="card-header">Filters</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="categoryFilter" class="form-label">Category</label>
+          <select id="categoryFilter" class="form-select" onchange="loadParts()">
+            <option value="">All Categories</option>
+            <option value="Engine">Engine</option>
+            <option value="Electrical">Electrical</option>
+            <option value="Body">Body</option>
+            <option value="Suspension">Suspension</option>
+            <option value="Brake">Brake</option>
+            <option value="Transmission">Transmission</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="lowStockFilter" class="form-label">Stock Status</label>
+          <select id="lowStockFilter" class="form-select" onchange="loadParts()">
+            <option value="">All</option>
+            <option value="true">Low Stock Only</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="partSearch" class="form-label">Search</label>
+          <input type="text" id="partSearch" class="form-input" placeholder="Search parts..." oninput="debounce(loadParts, 300)()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Parts Table -->
+    <div class="card">
+      <div class="card-header">Parts Inventory</div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Part Name</th>
+              <th>Part Number</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Reorder Level</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="partsTableBody">
+            <tr>
+              <td colspan="7" class="text-center text-muted">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Part Modal -->
+  <div id="addPartModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Add New Part</h3>
+        <button class="modal-close" onclick="closeModal('addPartModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="partForm">
+          <input type="hidden" id="partId">
+          <div class="form-group">
+            <label for="partName" class="form-label required">Part Name</label>
+            <input type="text" id="partName" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label for="partNumber" class="form-label required">Part Number</label>
+            <input type="text" id="partNumber" class="form-input" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="partCategory" class="form-label required">Category</label>
+              <select id="partCategory" class="form-select" required>
+                <option value="">Select category</option>
+                <option value="Engine">Engine</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Body">Body</option>
+                <option value="Suspension">Suspension</option>
+                <option value="Brake">Brake</option>
+                <option value="Transmission">Transmission</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="partPrice" class="form-label required">Price (₹)</label>
+              <input type="number" id="partPrice" class="form-input" min="0" step="0.01" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="partQuantity" class="form-label required">Quantity Available</label>
+              <input type="number" id="partQuantity" class="form-input" min="0" required>
+            </div>
+            <div class="form-group">
+              <label for="reorderLevel" class="form-label">Reorder Level</label>
+              <input type="number" id="reorderLevel" class="form-input" min="0" value="5">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="supplier" class="form-label">Supplier</label>
+            <input type="text" id="supplier" class="form-input">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeModal('addPartModal')" class="btn btn-outline">Cancel</button>
+        <button onclick="savePart()" class="btn btn-primary">Save Part</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update Quantity Modal -->
+  <div id="updateQuantityModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Update Stock Quantity</h3>
+        <button class="modal-close" onclick="closeModal('updateQuantityModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="updateQuantity" class="form-label">Quantity</label>
+          <input type="number" id="updateQuantity" class="form-input" min="1" value="1">
+        </div>
+        <div class="form-group">
+          <label for="quantityOperation" class="form-label">Operation</label>
+          <select id="quantityOperation" class="form-select">
+            <option value="add">Add Stock</option>
+            <option value="subtract">Remove Stock</option>
+          </select>
+        </div>
+        <input type="hidden" id="updatePartId">
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeModal('updateQuantityModal')" class="btn btn-outline">Cancel</button>
+        <button onclick="updateQuantity()" class="btn btn-primary">Update</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/inventory.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Details - Garage Management</title>
+  <link rel="stylesheet" href="../css/global.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="nav-brand">🏗️ Garage Management</a>
+      <ul class="nav-menu">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="services.html" class="nav-link active">Services</a></li>
+        <li><a href="inventory.html" class="nav-link">Inventory</a></li>
+        <li><a href="employees.html" class="nav-link">Employees</a></li>
+        <li><a href="payments.html" class="nav-link">Payments</a></li>
+        <li><a href="history.html" class="nav-link">History</a></li>
+        <li><a href="feedback.html" class="nav-link">Feedback</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="container">
+      <h1 class="page-title">Service Details</h1>
+      <p class="page-subtitle">Manage service information, parts, and employees</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Alert Message -->
+    <div id="alertMessage" class="alert hidden"></div>
+
+    <!-- Service Info Card -->
+    <div class="card">
+      <div class="flex-between">
+        <div>
+          <h2 style="margin-bottom: 10px;">Service Information</h2>
+          <p id="serviceInfo" class="text-muted"></p>
+        </div>
+        <div>
+          <span id="statusBadge" class="badge"></span>
+        </div>
+      </div>
+      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+        <div class="form-row">
+          <div>
+            <strong>Customer:</strong> <span id="customerInfo"></span><br>
+            <strong>Phone:</strong> <span id="phoneInfo"></span>
+          </div>
+          <div>
+            <strong>Vehicle:</strong> <span id="vehicleInfo"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Service Types & Details -->
+    <div class="card">
+      <div class="card-header">Service Types & Details</div>
+      <div class="form-group">
+        <label class="form-label">Service Types</label>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+          <label><input type="checkbox" class="service-checkbox" value="Oil Change"> Oil Change</label>
+          <label><input type="checkbox" class="service-checkbox" value="Engine Repair"> Engine Repair</label>
+          <label><input type="checkbox" class="service-checkbox" value="Brake Service"> Brake Service</label>
+          <label><input type="checkbox" class="service-checkbox" value="Tire Change"> Tire Change</label>
+          <label><input type="checkbox" class="service-checkbox" value="Battery Replacement"> Battery Replacement</label>
+          <label><input type="checkbox" class="service-checkbox" value="AC Service"> AC Service</label>
+          <label><input type="checkbox" class="service-checkbox" value="Washing"> Washing</label>
+          <label><input type="checkbox" class="service-checkbox" value="Painting"> Painting</label>
+          <label><input type="checkbox" class="service-checkbox" value="General Checkup"> General Checkup</label>
+          <label><input type="checkbox" class="service-checkbox" value="Electrical Work"> Electrical Work</label>
+          <label><input type="checkbox" class="service-checkbox" value="Other"> Other</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="serviceDescription" class="form-label">Description</label>
+        <textarea id="serviceDescription" class="form-textarea" placeholder="Additional service details..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="laborCharges" class="form-label">Labor Charges (₹)</label>
+          <input type="number" id="laborCharges" class="form-input" min="0" step="0.01" value="0">
+        </div>
+      </div>
+      <button onclick="updateServiceTypes()" class="btn btn-primary">Update Service Details</button>
+    </div>
+
+    <!-- Parts Section -->
+    <div class="card">
+      <div class="flex-between">
+        <div class="card-header" style="margin: 0;">Parts Used</div>
+        <button onclick="openModal('addPartModal')" class="btn btn-secondary btn-sm">+ Add Part</button>
+      </div>
+      <div class="table-container" style="margin-top: 20px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Part Name</th>
+              <th>Quantity</th>
+              <th>Price/Unit</th>
+              <th>Total</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="partsTableBody">
+            <tr>
+              <td colspan="5" class="text-center text-muted">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Employees Section -->
+    <div class="card">
+      <div class="card-header">Assigned Employees</div>
+      <div class="form-group">
+        <label for="employeeSelect" class="form-label">Select Employees</label>
+        <select id="employeeSelect" class="form-select" multiple style="min-height: 150px;">
+          <option>Loading employees...</option>
+        </select>
+        <small class="text-muted">Hold Ctrl/Cmd to select multiple employees</small>
+      </div>
+      <button onclick="updateEmployees()" class="btn btn-primary">Update Employees</button>
+    </div>
+
+    <!-- Summary Card -->
+    <div class="card">
+      <div class="card-header">Service Summary</div>
+      <div style="padding: 20px 0;">
+        <div class="flex-between" style="margin-bottom: 10px;">
+          <span>Parts Total:</span>
+          <strong id="partsTotal">₹0.00</strong>
+        </div>
+        <div class="flex-between" style="margin-bottom: 10px;">
+          <span>Labor Charges:</span>
+          <strong id="laborTotal">₹0.00</strong>
+        </div>
+        <div style="border-top: 2px solid var(--border-color); padding-top: 10px; margin-top: 10px;" class="flex-between">
+          <span style="font-size: 18px; font-weight: 600;">Grand Total:</span>
+          <strong style="font-size: 18px; color: var(--primary-color);" id="grandTotal">₹0.00</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Actions -->
+    <div class="card">
+      <div class="card-header">Service Status</div>
+      <div class="btn-group">
+        <button onclick="updateStatus('Pending')" class="btn btn-outline">Mark as Pending</button>
+        <button onclick="updateStatus('In Progress')" class="btn btn-warning">Mark as In Progress</button>
+        <button onclick="updateStatus('Completed')" class="btn btn-secondary">Mark as Completed</button>
+        <button onclick="updateStatus('Cancelled')" class="btn btn-danger">Cancel Service</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Part Modal -->
+  <div id="addPartModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Part to Service</h3>
+        <button class="modal-close" onclick="closeModal('addPartModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="partSearch" class="form-label">Search Parts</label>
+          <input type="text" id="partSearch" class="form-input" placeholder="Type part name or number...">
+          <div id="partSearchResults" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+        <div class="form-group">
+          <label for="selectedPartName" class="form-label">Selected Part</label>
+          <input type="text" id="selectedPartName" class="form-input" readonly>
+          <input type="hidden" id="selectedPartId">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="partPrice" class="form-label">Price per Unit (₹)</label>
+            <input type="number" id="partPrice" class="form-input" readonly>
+          </div>
+          <div class="form-group">
+            <label for="partQuantity" class="form-label">Quantity</label>
+            <input type="number" id="partQuantity" class="form-input" min="1" value="1">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeModal('addPartModal')" class="btn btn-outline">Cancel</button>
+        <button onclick="addPartToService()" class="btn btn-primary">Add Part</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/serviceDetails.js"></script>
+</body>
+</html>
+

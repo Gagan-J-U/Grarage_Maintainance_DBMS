@@ -25,7 +25,7 @@ const partsInventorySchema = new mongoose.Schema({
     min: 0,
     default: 0
   },
-  pricePerUnit: {
+  price: {
     type: Number,
     required: true,
     min: 0

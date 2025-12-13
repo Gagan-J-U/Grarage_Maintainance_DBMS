@@ -3,18 +3,21 @@ const { Service, ServiceHistory, Payment, PartsInventory } = require('../models'
 const mongoose = require('mongoose');
 const { asyncHandler } = require('../utils/errorHandler');
 const { sendSuccess, sendError } = require('../utils/responseHandler');
+const { deductParts, restoreParts } = require('../services/inventoryService');
+const { completeService } = require('../services/serviceTransactionService');
 
 // Create new service
 exports.createService = asyncHandler(async (req, res) => {
-  const { customerId, vehicleId, serviceTypes, description, laborCharges, estimatedCompletionDate } = req.body;
+  const { customerId, vehicleId, servicesRequested, description, laborCharges, estimatedCompletionDate, serviceDate } = req.body;
   
   const service = await Service.create({
     customerId,
     vehicleId,
-    serviceTypes,
+    servicesRequested: servicesRequested || [],
     description,
     laborCharges: laborCharges || 0,
     estimatedCompletionDate,
+    serviceDate: serviceDate || new Date(),
     totalAmount: laborCharges || 0
   });
   
@@ -74,38 +77,14 @@ exports.addPartsToService = asyncHandler(async (req, res) => {
     const service = await Service.findById(serviceId).session(session);
     if (!service) throw new Error('Service not found');
     
-    let partsTotal = 0;
+    // Use inventory service to deduct parts atomically
+    const { partsUsed, totalCost } = await deductParts(parts, session);
     
-    for (const part of parts) {
-      const partDoc = await PartsInventory.findById(part.partId).session(session);
-      
-      if (!partDoc) {
-        throw new Error(`Part not found: ${part.partId}`);
-      }
-      
-      if (partDoc.quantityAvailable < part.quantity) {
-        throw new Error(`Insufficient stock for ${partDoc.partName}`);
-      }
-      
-      // Deduct from inventory
-      partDoc.quantityAvailable -= part.quantity;
-      await partDoc.save({ session });
-      
-      const totalPrice = partDoc.pricePerUnit * part.quantity;
-      partsTotal += totalPrice;
-      
-      // Add to service
-      service.partsUsed.push({
-        partId: partDoc._id,
-        partName: partDoc.partName,
-        quantity: part.quantity,
-        pricePerUnit: partDoc.pricePerUnit,
-        totalPrice
-      });
-    }
+    // Add parts to service
+    service.partsUsed.push(...partsUsed);
     
     // Update total amount
-    service.totalAmount += partsTotal;
+    service.totalAmount += totalCost;
     await service.save({ session });
     
     await session.commitTransaction();
@@ -135,12 +114,8 @@ exports.removePartFromService = asyncHandler(async (req, res) => {
     const partToRemove = service.partsUsed[partIndex];
     if (!partToRemove) throw new Error('Part not found in service');
     
-    // Restore inventory
-    const partDoc = await PartsInventory.findById(partToRemove.partId).session(session);
-    if (partDoc) {
-      partDoc.quantityAvailable += partToRemove.quantity;
-      await partDoc.save({ session });
-    }
+    // Restore inventory using service
+    await restoreParts([partToRemove], session);
     
     // Update service total
     service.totalAmount -= partToRemove.totalPrice;
@@ -172,32 +147,10 @@ exports.updateServiceStatus = asyncHandler(async (req, res) => {
   service.status = status;
   
   if (status === 'Completed') {
-    service.completionDate = new Date();
-    
-    // Move to service history
-    await ServiceHistory.create({
-      serviceId: service._id,
-      customerId: service.customerId,
-      vehicleId: service.vehicleId,
-      serviceSnapshot: service.toObject(),
-      completionDate: service.completionDate
-    });
-    
-    // Create payment entry
-    const partsCharges = service.partsUsed.reduce((sum, part) => sum + (part.totalPrice || 0), 0);
-    const extraCharges = (service.extraCharges || []).reduce((sum, extra) => sum + (extra.amount || 0), 0);
-    
-    await Payment.create({
-      serviceId: service._id,
-      customerId: service.customerId,
-      vehicleId: service.vehicleId,
-      partsCharges,
-      laborCharges: service.laborCharges,
-      extraCharges,
-      subtotal: service.totalAmount,
-      totalAmount: service.totalAmount,
-      paymentStatus: 'Pending'
-    });
+    // Use transaction service to complete service atomically
+    await completeService(serviceId);
+    await service.populate(['customerId', 'vehicleId']);
+    return sendSuccess(res, 200, service, 'Service completed successfully');
   }
   
   await service.save();

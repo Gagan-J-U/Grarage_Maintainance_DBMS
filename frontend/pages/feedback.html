@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feedback - Garage Management</title>
+  <link rel="stylesheet" href="../css/global.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="nav-brand">🏗️ Garage Management</a>
+      <ul class="nav-menu">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="services.html" class="nav-link">Services</a></li>
+        <li><a href="inventory.html" class="nav-link">Inventory</a></li>
+        <li><a href="employees.html" class="nav-link">Employees</a></li>
+        <li><a href="payments.html" class="nav-link">Payments</a></li>
+        <li><a href="history.html" class="nav-link">History</a></li>
+        <li><a href="feedback.html" class="nav-link active">Feedback</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="container">
+      <h1 class="page-title">Customer Feedback</h1>
+      <p class="page-subtitle">View customer feedback for completed services</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Alert Message -->
+    <div id="alertMessage" class="alert hidden"></div>
+
+    <!-- Feedback List -->
+    <div class="card">
+      <div class="card-header">All Feedback</div>
+      <div id="feedbackList" style="padding: 20px;">
+        <div class="text-center text-muted">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Feedback Modal -->
+  <div id="addFeedbackModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Submit Feedback</h3>
+        <button class="modal-close" onclick="closeModal('addFeedbackModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="feedbackForm">
+          <input type="hidden" id="feedbackServiceId">
+          <input type="hidden" id="feedbackCustomerId">
+          <div class="form-group">
+            <label class="form-label required">Rating</label>
+            <div style="display: flex; gap: 10px; font-size: 30px; cursor: pointer;">
+              <span onclick="setRating(1)" id="star1">☆</span>
+              <span onclick="setRating(2)" id="star2">☆</span>
+              <span onclick="setRating(3)" id="star3">☆</span>
+              <span onclick="setRating(4)" id="star4">☆</span>
+              <span onclick="setRating(5)" id="star5">☆</span>
+            </div>
+            <input type="hidden" id="feedbackRating" required>
+          </div>
+          <div class="form-group">
+            <label for="feedbackComment" class="form-label">Comments</label>
+            <textarea id="feedbackComment" class="form-textarea" placeholder="Share your experience..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeModal('addFeedbackModal')" class="btn btn-outline">Cancel</button>
+        <button onclick="submitFeedback()" class="btn btn-primary">Submit Feedback</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/feedback.js"></script>
+</body>
+</html>
+

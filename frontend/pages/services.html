@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Services - Garage Management</title>
+  <link rel="stylesheet" href="../css/global.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="nav-brand">🏗️ Garage Management</a>
+      <ul class="nav-menu">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="services.html" class="nav-link active">Services</a></li>
+        <li><a href="inventory.html" class="nav-link">Inventory</a></li>
+        <li><a href="employees.html" class="nav-link">Employees</a></li>
+        <li><a href="payments.html" class="nav-link">Payments</a></li>
+        <li><a href="history.html" class="nav-link">History</a></li>
+        <li><a href="feedback.html" class="nav-link">Feedback</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="container">
+      <div class="flex-between">
+        <div>
+          <h1 class="page-title">All Services</h1>
+          <p class="page-subtitle">View and manage all service entries</p>
+        </div>
+        <a href="index.html" class="btn btn-primary">+ New Service</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Alert Message -->
+    <div id="alertMessage" class="alert hidden"></div>
+
+    <!-- Filters -->
+    <div class="card">
+      <div class="card-header">Filters</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="statusFilter" class="form-label">Status</label>
+          <select id="statusFilter" class="form-select" onchange="loadServices()">
+            <option value="">All Status</option>
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="dateFrom" class="form-label">From Date</label>
+          <input type="date" id="dateFrom" class="form-input" onchange="loadServices()">
+        </div>
+        <div class="form-group">
+          <label for="dateTo" class="form-label">To Date</label>
+          <input type="date" id="dateTo" class="form-input" onchange="loadServices()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Services Table -->
+    <div class="card">
+      <div class="card-header">Services List</div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Service ID</th>
+              <th>Customer</th>
+              <th>Vehicle</th>
+              <th>Status</th>
+              <th>Total Amount</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="servicesTableBody">
+            <tr>
+              <td colspan="7" class="text-center text-muted">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/services.js"></script>
+</body>
+</html>
+

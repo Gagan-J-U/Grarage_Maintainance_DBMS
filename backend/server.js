@@ -19,18 +19,17 @@ const startServer = async () => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  // Serve static files from frontend, optional
+  // Serve static files from frontend
   app.use(express.static(path.join(__dirname, '../frontend')));
+  app.use('/pages', express.static(path.join(__dirname, '../frontend/pages')));
+  app.use('/css', express.static(path.join(__dirname, '../frontend/css')));
+  app.use('/js', express.static(path.join(__dirname, '../frontend/js')));
 
   // Health and root
   app.get('/api/health', (req, res) => res.json({ status: 'OK', message: 'Server running' }));
   app.get('/', (req, res) => {
     const indexFile = path.join(__dirname, '../frontend/pages/index.html');
-    try {
-      res.sendFile(indexFile);
-    } catch (err) {
-      res.send('Frontend not available');
-    }
+    res.sendFile(indexFile);
   });
 
   // Load API routes automatically

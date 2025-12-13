@@ -1,16 +1,16 @@
 const mongoose = require('mongoose');
 
 const customerSchema = new mongoose.Schema({
-  phoneNumber: {
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  phone: {
     type: String,
     required: true,
     unique: true,
     index: true, // Index for fast lookups
-    trim: true
-  },
-  name: {
-    type: String,
-    required: true,
     trim: true
   },
   email: {
@@ -21,16 +21,12 @@ const customerSchema = new mongoose.Schema({
   address: {
     type: String,
     trim: true
-  },
-  isActive: {
-    type: Boolean,
-    default: true
   }
 }, {
   timestamps: true // Adds createdAt and updatedAt
 });
 
 // Index for text search
-customerSchema.index({ name: 'text', phoneNumber: 'text' });
+customerSchema.index({ name: 'text', phone: 'text' });
 
 module.exports = mongoose.model('Customer', customerSchema);
