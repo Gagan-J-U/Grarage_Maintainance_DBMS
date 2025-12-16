@@ -36,6 +36,15 @@
     <!-- Alert Message -->
     <div id="alertMessage" class="alert hidden"></div>
 
+    <!-- Submit New Feedback Section -->
+    <div class="card" id="submitFeedbackCard" style="display: none;">
+      <div class="card-header">Submit Feedback for Service</div>
+      <div style="padding: 20px;">
+        <p id="feedbackServiceInfo" class="text-muted"></p>
+        <button onclick="openAddFeedbackModalFromURL()" class="btn btn-primary">Submit Feedback</button>
+      </div>
+    </div>
+
     <!-- Feedback List -->
     <div class="card">
       <div class="card-header">All Feedback</div>

@@ -66,17 +66,17 @@
       <div class="form-group">
         <label class="form-label">Service Types</label>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-          <label><input type="checkbox" class="service-checkbox" value="Oil Change"> Oil Change</label>
-          <label><input type="checkbox" class="service-checkbox" value="Engine Repair"> Engine Repair</label>
-          <label><input type="checkbox" class="service-checkbox" value="Brake Service"> Brake Service</label>
-          <label><input type="checkbox" class="service-checkbox" value="Tire Change"> Tire Change</label>
-          <label><input type="checkbox" class="service-checkbox" value="Battery Replacement"> Battery Replacement</label>
-          <label><input type="checkbox" class="service-checkbox" value="AC Service"> AC Service</label>
-          <label><input type="checkbox" class="service-checkbox" value="Washing"> Washing</label>
-          <label><input type="checkbox" class="service-checkbox" value="Painting"> Painting</label>
-          <label><input type="checkbox" class="service-checkbox" value="General Checkup"> General Checkup</label>
-          <label><input type="checkbox" class="service-checkbox" value="Electrical Work"> Electrical Work</label>
-          <label><input type="checkbox" class="service-checkbox" value="Other"> Other</label>
+          <label><input type="checkbox" class="service-checkbox" value="Oil Change" onchange="updateServiceTypes()"> Oil Change</label>
+          <label><input type="checkbox" class="service-checkbox" value="Engine Repair" onchange="updateServiceTypes()"> Engine Repair</label>
+          <label><input type="checkbox" class="service-checkbox" value="Brake Service" onchange="updateServiceTypes()"> Brake Service</label>
+          <label><input type="checkbox" class="service-checkbox" value="Tire Change" onchange="updateServiceTypes()"> Tire Change</label>
+          <label><input type="checkbox" class="service-checkbox" value="Battery Replacement" onchange="updateServiceTypes()"> Battery Replacement</label>
+          <label><input type="checkbox" class="service-checkbox" value="AC Service" onchange="updateServiceTypes()"> AC Service</label>
+          <label><input type="checkbox" class="service-checkbox" value="Washing" onchange="updateServiceTypes()"> Washing</label>
+          <label><input type="checkbox" class="service-checkbox" value="Painting" onchange="updateServiceTypes()"> Painting</label>
+          <label><input type="checkbox" class="service-checkbox" value="General Checkup" onchange="updateServiceTypes()"> General Checkup</label>
+          <label><input type="checkbox" class="service-checkbox" value="Electrical Work" onchange="updateServiceTypes()"> Electrical Work</label>
+          <label><input type="checkbox" class="service-checkbox" value="Other" onchange="updateServiceTypes()"> Other</label>
         </div>
       </div>
       <div class="form-group">
@@ -86,7 +86,7 @@
       <div class="form-row">
         <div class="form-group">
           <label for="laborCharges" class="form-label">Labor Charges (₹)</label>
-          <input type="number" id="laborCharges" class="form-input" min="0" step="0.01" value="0">
+          <input type="number" id="laborCharges" class="form-input" min="0" step="0.01" value="0" onchange="updateServiceTypes()">
         </div>
       </div>
       <button onclick="updateServiceTypes()" class="btn btn-primary">Update Service Details</button>
@@ -192,8 +192,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button onclick="closeModal('addPartModal')" class="btn btn-outline">Cancel</button>
-        <button onclick="addPartToService()" class="btn btn-primary">Add Part</button>
+        <button type="button" onclick="closeModal('addPartModal')" class="btn btn-outline">Cancel</button>
+        <button type="button" onclick="addPartToService()" class="btn btn-primary">Add Part</button>
       </div>
     </div>
   </div>

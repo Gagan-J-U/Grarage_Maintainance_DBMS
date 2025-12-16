@@ -20,9 +20,14 @@ async function loadPayments() {
     if (dateTo) filters.endDate = dateTo;
     
     const response = await paymentAPI.getAll(filters);
-    const payments = response.data;
-    displayPayments(payments);
+    
+    if (response.success && response.data) {
+      displayPayments(response.data);
+    } else {
+      throw new Error(response.error || 'Failed to load payments');
+    }
   } catch (error) {
+    console.error('Error loading payments:', error);
     document.getElementById('paymentsTableBody').innerHTML = `
       <tr>
         <td colspan="10" class="text-center text-danger">Error loading payments: ${error.message}</td>
@@ -48,16 +53,17 @@ function displayPayments(payments) {
     const customer = payment.customerId || {};
     const vehicle = payment.vehicleId || {};
     const service = payment.serviceId || {};
+    const serviceIdStr = service && service._id ? service._id.toString() : (payment.serviceId ? payment.serviceId.toString() : 'N/A');
     
     return `
       <tr>
-        <td>${service._id ? service._id.toString().substring(0, 8) + '...' : 'N/A'}</td>
+        <td>${serviceIdStr !== 'N/A' ? serviceIdStr.substring(0, 8) + '...' : 'N/A'}</td>
         <td>${customer.name || 'N/A'}</td>
         <td>${vehicle.vehicleNumber || 'N/A'}</td>
-        <td>${formatCurrency(payment.totalAmount)}</td>
-        <td>${formatCurrency(payment.paidAmount)}</td>
-        <td>${formatCurrency(payment.balanceAmount)}</td>
-        <td>${payment.paymentMode || 'N/A'}</td>
+        <td>${formatCurrency(payment.totalAmount || 0)}</td>
+        <td>${formatCurrency(payment.paidAmount || 0)}</td>
+        <td>${formatCurrency(payment.balanceAmount || payment.totalAmount || 0)}</td>
+        <td>${payment.paymentMode || 'Not Set'}</td>
         <td><span class="badge ${getStatusBadgeClass(payment.paymentStatus)}">${payment.paymentStatus}</span></td>
         <td>${formatDate(payment.paymentDate || payment.createdAt)}</td>
         <td>

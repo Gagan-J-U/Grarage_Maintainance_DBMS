@@ -53,6 +53,26 @@ function displayHistory(history) {
     
     const serviceTypes = snapshot.servicesRequested || [];
     
+    // Extract serviceId - handle both object and string
+    let serviceIdStr = '';
+    if (item.serviceId) {
+      if (typeof item.serviceId === 'object' && item.serviceId !== null) {
+        serviceIdStr = item.serviceId._id ? item.serviceId._id.toString() : item.serviceId.toString();
+      } else {
+        serviceIdStr = item.serviceId.toString();
+      }
+    }
+    
+    // Extract customerId - handle both object and string
+    let customerIdStr = '';
+    if (item.customerId) {
+      if (typeof item.customerId === 'object' && item.customerId !== null) {
+        customerIdStr = item.customerId._id ? item.customerId._id.toString() : item.customerId.toString();
+      } else {
+        customerIdStr = item.customerId.toString();
+      }
+    }
+    
     return `
       <tr>
         <td>${formatDate(item.completionDate)}</td>
@@ -63,10 +83,17 @@ function displayHistory(history) {
         <td>${formatCurrency(snapshot.totalAmount || 0)}</td>
         <td>
           <button onclick="viewHistoryDetails('${item._id}')" class="btn btn-sm btn-primary">View Details</button>
+          ${serviceIdStr && customerIdStr ? `<button onclick="openFeedbackForService('${serviceIdStr}', '${customerIdStr}')" class="btn btn-sm btn-secondary">Give Feedback</button>` : ''}
         </td>
       </tr>
     `;
   }).join('');
+}
+
+// Open feedback modal for a service
+function openFeedbackForService(serviceId, customerId) {
+  // Redirect to feedback page with parameters
+  window.location.href = `/pages/feedback.html?serviceId=${serviceId}&customerId=${customerId}`;
 }
 
 // View history details

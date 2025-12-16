@@ -70,33 +70,64 @@ exports.getAllServices = asyncHandler(async (req, res) => {
 exports.addPartsToService = asyncHandler(async (req, res) => {
   const { serviceId, parts } = req.body; // parts: [{ partId, quantity }]
   
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  // Check if MongoDB supports transactions
+  const hasReplicaSet = mongoose.connection.readyState === 1 && 
+                        mongoose.connection.db && 
+                        mongoose.connection.db.serverConfig &&
+                        mongoose.connection.db.serverConfig.isReplicaSet;
   
-  try {
-    const service = await Service.findById(serviceId).session(session);
-    if (!service) throw new Error('Service not found');
+  if (hasReplicaSet) {
+    // Use transaction for replica set
+    const session = await mongoose.startSession();
+    session.startTransaction();
     
-    // Use inventory service to deduct parts atomically
-    const { partsUsed, totalCost } = await deductParts(parts, session);
-    
-    // Add parts to service
-    service.partsUsed.push(...partsUsed);
-    
-    // Update total amount
-    service.totalAmount += totalCost;
-    await service.save({ session });
-    
-    await session.commitTransaction();
-    
-    await service.populate(['customerId', 'vehicleId', 'partsUsed.partId']);
-    
-    sendSuccess(res, 200, service, 'Parts added successfully');
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    session.endSession();
+    try {
+      const service = await Service.findById(serviceId).session(session);
+      if (!service) throw new Error('Service not found');
+      
+      // Use inventory service to deduct parts atomically
+      const { partsUsed, totalCost } = await deductParts(parts, session);
+      
+      // Add parts to service
+      service.partsUsed.push(...partsUsed);
+      
+      // Update total amount
+      service.totalAmount += totalCost;
+      await service.save({ session });
+      
+      await session.commitTransaction();
+      
+      await service.populate(['customerId', 'vehicleId', 'partsUsed.partId']);
+      
+      sendSuccess(res, 200, service, 'Parts added successfully');
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  } else {
+    // Execute without transaction for standalone MongoDB
+    try {
+      const service = await Service.findById(serviceId);
+      if (!service) throw new Error('Service not found');
+      
+      // Use inventory service to deduct parts
+      const { partsUsed, totalCost } = await deductParts(parts);
+      
+      // Add parts to service
+      service.partsUsed.push(...partsUsed);
+      
+      // Update total amount
+      service.totalAmount += totalCost;
+      await service.save();
+      
+      await service.populate(['customerId', 'vehicleId', 'partsUsed.partId']);
+      
+      sendSuccess(res, 200, service, 'Parts added successfully');
+    } catch (error) {
+      throw error;
+    }
   }
 });
 
@@ -104,34 +135,66 @@ exports.addPartsToService = asyncHandler(async (req, res) => {
 exports.removePartFromService = asyncHandler(async (req, res) => {
   const { serviceId, partIndex } = req.body;
   
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  // Check if MongoDB supports transactions
+  const hasReplicaSet = mongoose.connection.readyState === 1 && 
+                        mongoose.connection.db && 
+                        mongoose.connection.db.serverConfig &&
+                        mongoose.connection.db.serverConfig.isReplicaSet;
   
-  try {
-    const service = await Service.findById(serviceId).session(session);
-    if (!service) throw new Error('Service not found');
+  if (hasReplicaSet) {
+    // Use transaction for replica set
+    const session = await mongoose.startSession();
+    session.startTransaction();
     
-    const partToRemove = service.partsUsed[partIndex];
-    if (!partToRemove) throw new Error('Part not found in service');
-    
-    // Restore inventory using service
-    await restoreParts([partToRemove], session);
-    
-    // Update service total
-    service.totalAmount -= partToRemove.totalPrice;
-    
-    // Remove part
-    service.partsUsed.splice(partIndex, 1);
-    await service.save({ session });
-    
-    await session.commitTransaction();
-    
-    sendSuccess(res, 200, service, 'Part removed successfully');
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    session.endSession();
+    try {
+      const service = await Service.findById(serviceId).session(session);
+      if (!service) throw new Error('Service not found');
+      
+      const partToRemove = service.partsUsed[partIndex];
+      if (!partToRemove) throw new Error('Part not found in service');
+      
+      // Restore inventory using service
+      await restoreParts([partToRemove], session);
+      
+      // Update service total
+      service.totalAmount -= partToRemove.totalPrice;
+      
+      // Remove part
+      service.partsUsed.splice(partIndex, 1);
+      await service.save({ session });
+      
+      await session.commitTransaction();
+      
+      sendSuccess(res, 200, service, 'Part removed successfully');
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  } else {
+    // Execute without transaction for standalone MongoDB
+    try {
+      const service = await Service.findById(serviceId);
+      if (!service) throw new Error('Service not found');
+      
+      const partToRemove = service.partsUsed[partIndex];
+      if (!partToRemove) throw new Error('Part not found in service');
+      
+      // Restore inventory using service
+      await restoreParts([partToRemove]);
+      
+      // Update service total
+      service.totalAmount -= partToRemove.totalPrice;
+      
+      // Remove part
+      service.partsUsed.splice(partIndex, 1);
+      await service.save();
+      
+      sendSuccess(res, 200, service, 'Part removed successfully');
+    } catch (error) {
+      throw error;
+    }
   }
 });
 
@@ -161,14 +224,30 @@ exports.updateServiceStatus = asyncHandler(async (req, res) => {
 
 // Update service
 exports.updateService = asyncHandler(async (req, res) => {
-  const { serviceId } = req.params;
+  const { id } = req.params; // Route parameter is 'id', not 'serviceId'
   const updates = req.body;
   
+  // Calculate totalAmount if partsUsed or laborCharges are being updated
+  if (updates.laborCharges !== undefined || updates.partsUsed !== undefined) {
+    const service = await Service.findById(id);
+    if (!service) {
+      return sendError(res, 404, 'Service not found');
+    }
+    
+    // Calculate parts total
+    const partsUsed = updates.partsUsed || service.partsUsed || [];
+    const partsTotal = partsUsed.reduce((sum, part) => sum + (part.totalPrice || 0), 0);
+    
+    // Calculate total
+    const laborCharges = updates.laborCharges !== undefined ? updates.laborCharges : service.laborCharges;
+    updates.totalAmount = partsTotal + (laborCharges || 0);
+  }
+  
   const service = await Service.findByIdAndUpdate(
-    serviceId,
+    id,
     updates,
     { new: true, runValidators: true }
-  ).populate(['customerId', 'vehicleId', 'assignedEmployees']);
+  ).populate(['customerId', 'vehicleId', 'assignedEmployees', 'partsUsed.partId']);
   
   if (!service) {
     return sendError(res, 404, 'Service not found');

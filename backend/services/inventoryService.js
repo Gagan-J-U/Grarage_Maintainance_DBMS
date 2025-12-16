@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 /**
  * Deduct parts from inventory atomically
  * @param {Array} parts - Array of { partId, quantity }
- * @param {Object} session - MongoDB session for transaction
+ * @param {Object} session - MongoDB session for transaction (optional)
  * @returns {Object} - { partsUsed, totalCost }
  */
 async function deductParts(parts, session = null) {
@@ -15,7 +15,10 @@ async function deductParts(parts, session = null) {
   let totalCost = 0;
   
   for (const part of parts) {
-    const partDoc = await PartsInventory.findById(part.partId).session(session);
+    // Use session if provided, otherwise query normally
+    const partDoc = session 
+      ? await PartsInventory.findById(part.partId).session(session)
+      : await PartsInventory.findById(part.partId);
     
     if (!partDoc) {
       throw new Error(`Part not found: ${part.partId}`);
@@ -27,7 +30,11 @@ async function deductParts(parts, session = null) {
     
     // Deduct from inventory
     partDoc.quantityAvailable -= part.quantity;
-    await partDoc.save({ session });
+    if (session) {
+      await partDoc.save({ session });
+    } else {
+      await partDoc.save();
+    }
     
     const totalPrice = partDoc.price * part.quantity;
     totalCost += totalPrice;
@@ -47,15 +54,21 @@ async function deductParts(parts, session = null) {
 /**
  * Restore parts to inventory atomically
  * @param {Array} partsUsed - Array of parts to restore
- * @param {Object} session - MongoDB session for transaction
+ * @param {Object} session - MongoDB session for transaction (optional)
  */
 async function restoreParts(partsUsed, session = null) {
   for (const part of partsUsed) {
     if (part.partId) {
-      const partDoc = await PartsInventory.findById(part.partId).session(session);
+      const partDoc = session
+        ? await PartsInventory.findById(part.partId).session(session)
+        : await PartsInventory.findById(part.partId);
       if (partDoc) {
         partDoc.quantityAvailable += part.quantity;
-        await partDoc.save({ session });
+        if (session) {
+          await partDoc.save({ session });
+        } else {
+          await partDoc.save();
+        }
       }
     }
   }

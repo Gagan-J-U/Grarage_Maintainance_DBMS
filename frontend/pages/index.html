@@ -67,23 +67,38 @@
 
         <!-- Vehicle Section -->
         <h3 style="margin: 30px 0 15px 0; color: var(--dark-color);">Vehicle Details</h3>
-        <div class="form-row">
+        
+        <!-- Hidden input for selected vehicle ID -->
+        <input type="hidden" id="selectedVehicleId" value="">
+        
+        <!-- Existing Vehicles Display -->
+        <div id="existingVehiclesContainer" style="display: none; margin-bottom: 20px;">
           <div class="form-group">
-            <label for="vehicleNumber" class="form-label required">Vehicle Number</label>
-            <input type="text" id="vehicleNumber" class="form-input" placeholder="e.g., ABC1234" required>
-            <span class="form-error">Vehicle number is required</span>
-          </div>
-          <div class="form-group">
-            <label for="vehicleType" class="form-label required">Vehicle Type</label>
-            <select id="vehicleType" class="form-select" required>
-              <option value="">Select type</option>
-              <option value="2-wheeler">2-Wheeler</option>
-              <option value="3-wheeler">3-Wheeler</option>
-              <option value="4-wheeler">4-Wheeler</option>
-            </select>
-            <span class="form-error">Please select vehicle type</span>
+            <label class="form-label">Select Existing Vehicle or Add New</label>
+            <div id="existingVehiclesList" style="margin-bottom: 15px;"></div>
+            <button type="button" onclick="showNewVehicleForm()" class="btn btn-outline btn-sm">+ Add New Vehicle</button>
           </div>
         </div>
+        
+        <!-- New Vehicle Form -->
+        <div id="newVehicleForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="vehicleNumber" class="form-label required">Vehicle Number</label>
+              <input type="text" id="vehicleNumber" class="form-input" placeholder="e.g., ABC1234" required>
+              <span class="form-error">Vehicle number is required</span>
+            </div>
+            <div class="form-group">
+              <label for="vehicleType" class="form-label required">Vehicle Type</label>
+              <select id="vehicleType" class="form-select" required>
+                <option value="">Select type</option>
+                <option value="2-wheeler">2-Wheeler</option>
+                <option value="3-wheeler">3-Wheeler</option>
+                <option value="4-wheeler">4-Wheeler</option>
+              </select>
+              <span class="form-error">Please select vehicle type</span>
+            </div>
+          </div>
         <div class="form-row">
           <div class="form-group">
             <label for="vehicleBrand" class="form-label">Brand</label>
@@ -104,6 +119,9 @@
             <input type="text" id="vehicleColor" class="form-input" placeholder="e.g., Red, Blue">
           </div>
         </div>
+        </div>
+        
+        <input type="hidden" id="selectedVehicleId" value="">
 
         <!-- Submit Button -->
         <div class="btn-group">
