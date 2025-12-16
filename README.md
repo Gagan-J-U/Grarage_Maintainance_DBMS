@@ -17,7 +17,7 @@ A complete DBMS project for managing a garage maintenance business with customer
 
 ### 2. Service Management
 - Select multiple service types
-- Add/remove parts from inventory
+- Add/remove parts from inventoryq
 - Assign employees to services
 - Track service status (Pending, In Progress, Completed)
 - Auto-calculate costs
