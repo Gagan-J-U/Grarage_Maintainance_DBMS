@@ -10,76 +10,12 @@ const { connectDB, disconnectDB } = require('./config/database');
 const { errorHandler } = require('./utils/errorHandler');
 const { loadRoutes } = require('./routes');
 
-/**
- * Get an available port, trying subsequent ports if the initial port is in use.
- * 
- * BUG FIX EXPLANATION:
- * The original bug occurred because process.env.PORT is always a string in Node.js.
- * When currentPort was a string like "5000", the expression currentPort + 1 performed
- * string concatenation instead of numeric addition, resulting in "50001", "500011", etc.
- * 
- * FIX:
- * - Convert startPort to a number using parseInt() with validation
- * - Ensure currentPort is always treated as a number when incrementing
- * - Add bounds checking to prevent ports exceeding 65535 (max valid port)
- * - Validate port range (0-65535) before attempting to use it
- */
-const getAvailablePort = (startPort, maxAttempts = 10) => {
-  const net = require('net');
-  
-  // Convert startPort to a number and validate
-  const startPortNum = parseInt(startPort, 10);
-  if (isNaN(startPortNum) || startPortNum < 0 || startPortNum > 65535) {
-    return Promise.reject(new Error(`Invalid starting port: ${startPort}. Must be between 0 and 65535.`));
-  }
-  
-  return new Promise((resolve, reject) => {
-    let attempts = 0;
-    const MAX_PORT = 65535; // Maximum valid port number
-    
-    const tryPort = (currentPort) => {
-      // Validate port is within valid range
-      if (currentPort > MAX_PORT) {
-        return reject(new Error(`No available ports found. Reached maximum port limit (${MAX_PORT}).`));
-      }
-      
-      // Check max attempts
-      if (attempts >= maxAttempts) {
-        return reject(new Error(`No available ports found after ${maxAttempts} attempts (tried ports ${startPortNum} to ${currentPort - 1}).`));
-      }
-      
-      const server = net.createServer()
-        .once('error', (err) => {
-          if (err.code === 'EADDRINUSE') {
-            console.log(`Port ${currentPort} is in use, trying next port...`);
-            attempts++;
-            // CRITICAL: Ensure numeric addition, not string concatenation
-            const nextPort = Number(currentPort) + 1;
-            tryPort(nextPort);
-          } else {
-            reject(err);
-          }
-        })
-        .once('listening', () => {
-          server.once('close', () => {
-            // Ensure we return a number, not a string
-            resolve(Number(currentPort));
-          }).close();
-        })
-        .listen(currentPort);
-    };
-    
-    tryPort(startPortNum);
-  });
-};
+// Removed dynamic port search helper; server will listen on configured port directly.
 
 // Convert environment variable to number with validation
 // process.env.PORT is always a string, so we must parse it
-const DEFAULT_PORT = 5000;
-const envPort = process.env.PORT ? parseInt(process.env.PORT, 10) : null;
-const PORT = (envPort && !isNaN(envPort) && envPort >= 0 && envPort <= 65535) 
-  ? envPort 
-  : DEFAULT_PORT;
+
+const PORT = 5000; // Default port
 
 const startServer = async () => {
   const app = express();
@@ -131,31 +67,14 @@ const startServer = async () => {
   // Connect to DB
   await connectDB();
 
-  // Get an available port
-  const port = await getAvailablePort(PORT);
-  
-  const server = app.listen(port, () => {
-    console.log(`🚀 Server running on port ${port}`);
-    console.log(`📂 Frontend: http://localhost:${port}`);
-    console.log(`🔌 API: http://localhost:${port}/api`);
+  // Use configured port directly
+  const server = app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📂 Frontend: http://localhost:${PORT}`);
+    console.log(`🔌 API: http://localhost:${PORT}/api`);
   });
 
-  const shutdown = async (signal) => {
-    console.log(`\nReceived ${signal}. Shutting down gracefully...`);
-    server.close(async (err) => {
-      if (err) {
-        console.error('Error during server shutdown:', err);
-        process.exit(1);
-      }
-      await disconnectDB();
-      console.log('Shutdown complete.');
-      process.exit(0);
-    });
-  };
-
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('SIGINT', () => shutdown('SIGINT'));
-
+  // Global error handlers
   process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
   });
