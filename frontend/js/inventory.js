@@ -172,11 +172,4 @@ async function deletePart(partId) {
   }
 }
 
-// Override modal open for add button
-document.addEventListener('DOMContentLoaded', () => {
-  const addBtn = document.querySelector('button[onclick*="addPartModal"]');
-  if (addBtn) {
-    addBtn.onclick = openAddPartModal;
-  }
-});
 
