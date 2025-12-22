@@ -177,10 +177,8 @@ function selectExistingVehicle(vehicleId, vehicleNumber, vehicleType) {
   }
   
   // Hide new vehicle form
-  const newVehicleForm = document.getElementById('newVehicleForm');
-  if (newVehicleForm) {
-    newVehicleForm.style.display = 'none';
-  }
+  checkVehicle(vehicleNumber); 
+  showNewVehicleForm();
   
   showAlert(`Vehicle ${vehicleNumber} selected`, 'success');
 }
@@ -194,6 +192,7 @@ async function checkVehicle(vehicleNumber) {
       currentVehicle = response.data;
       
       // Auto-fill vehicle details
+      document.getElementById('vehicleNumber').value = vehicleNumber;
       document.getElementById('vehicleType').value = currentVehicle.vehicleType;
       document.getElementById('vehicleBrand').value = currentVehicle.brand || '';
       document.getElementById('vehicleModel').value = currentVehicle.model || '';
